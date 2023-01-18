@@ -1,22 +1,26 @@
-import React, { createContext, useState } from 'react';
+import React from 'react';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import './App.css';
-import Content from './components/content';
-import Nav from './components/nav';
-
-export const PageContext = createContext()
-
+import Home from './components/home';
+import Layout from './components/layout';
+import Users from './components/users';
 
 function App() {
-
-  const [page, setPage] = useState('home')
-
   return (
-    <PageContext.Provider value={[page, setPage]}>
-      <Nav />
-      <div className='container'>
-        <Content />
-      </div>
-    </PageContext.Provider>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Layout />}>
+          <Route index element={<Home />}></Route>
+          <Route path='users' element={<Users />}></Route>
+        </Route>
+        <Route path='*' element={
+          <>
+            <h1>Not found</h1>
+            <Link to={'/'}>go to Home</Link>
+          </>
+        } />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

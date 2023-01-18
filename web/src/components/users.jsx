@@ -5,9 +5,10 @@ export default function Users() {
     const [users, setUsers] = useState([])
 
     useEffect(() => {
-        fetch('https://jsonplaceholder.typicode.com/users/')
+        fetch('http://localhost:8080/users')
             .then(resp => resp.json())
             .then(jsonUsers => {
+                // console.log(jsonUsers);
                 setUsers(jsonUsers)
             });
     }, [])
