@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { PageContext } from "../App";
-import Users from "./users";
+import Users from "./users/users";
 
 export default function Content() {
 
