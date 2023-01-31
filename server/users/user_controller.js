@@ -1,62 +1,94 @@
-import { getReqBodyJson, httpClientError, httpCreate, httpOk, noContent } from "../core/http_util.js";
-import { createUser, getUserById, listUsers, editUser, deleteUser } from "./user_service.js";
+import fs from 'fs'
+import { getBasicAuthorization, getReqBodyJson, httpBadRequest, httpCreate, httpOk, httpUnauthorized, jwtKey, noContent } from "../core/http_util.js"
+import { createUser, editUser, getAllUsers, getUserById, removeUser } from "./user_service.js"
+import jwt from 'jsonwebtoken'
+
+
+function postLogin(req, res) {
+    const credentials = getBasicAuthorization(req)
+    if (credentials && credentials.username === 'user'
+        && credentials.password === 'P@ssw0rd') {
+        var token = jwt.sign({
+            user: 'user',
+            sub: 1234,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + (60 * 60),//1H
+        }, jwtKey)
+        httpOk(res, { jwt: token })
+    } else {
+        httpUnauthorized(res)
+    }
+}
 
 function getUsers(req, res) {
-    httpOk(res, listUsers())
+    const users = getAllUsers()
+    if (users) {
+        httpOk(res, users)
+    } else {
+        noContent(res)
+    }
 }
 
 function getUser(req, res) {
-    const userIdStr = req.url.substring('/users/'.length)
-    const userId = parseInt(userIdStr, 10)
+    // /users/1
+    const strUserId = req.url.substring('/users/'.length)
+    const userId = parseInt(strUserId, 10)
     if (userId) {
         const user = getUserById(userId)
         if (user) {
             httpOk(res, user)
         } else {
-            httpClientError(res, { 'message': 'user not found', 'userId': userIdStr });
+            httpBadRequest(res, { message: 'user not found', userId: userId })
         }
     } else {
-        httpClientError(res, { 'message': 'Invalid user id', 'userId': userIdStr });
+        httpBadRequest(res, { message: 'bad user id', userId: userId })
     }
 }
 
-function removeUser(req, res) {
-    const userIdStr = req.url.substring('/users/'.length)
-    const userId = parseInt(userIdStr, 10)
-    if (userId) {
-        if (deleteUser(userId)) {
-            noContent(res)
-        } else {
-            httpClientError(res, { 'message': 'user not found', 'userId': userIdStr });
-        }
-    } else {
-        httpClientError(res, { 'message': 'Invalid user id', 'userId': userIdStr });
-    }
-}
-
-function postUser(req, res) {
+function postUsers(req, res) {
     getReqBodyJson(req).then(
         user => {
+            const originUser = { ...user }
             if (createUser(user)) {
                 httpCreate(res, user)
             } else {
-                httpClientError(res, { 'message': 'invalide user', 'user': user })
+                httpBadRequest(res, { message: 'bad user structure', user: originUser })
             }
         },
-        error => { httpClientError(res, { 'error': error }) });
+        error => {
+            httpBadRequest(res, { message: error })
+        })
 }
 
-
-function putUser(req, res) {
+function putUsers(req, res) {
     getReqBodyJson(req).then(
         user => {
+            const originUser = { ...user }
             if (editUser(user)) {
                 httpOk(res, user)
             } else {
-                httpClientError(res, { 'message': 'invalide user', 'user': user })
+                httpBadRequest(res, { message: 'bad user structure', user: originUser })
             }
         },
-        error => { httpClientError(res, { 'error': error }) });
+        error => {
+            httpBadRequest(res, { message: error })
+        })
 }
 
-export { getUsers, getUser, postUser, putUser, removeUser }
+
+function deleteUser(req, res) {
+    const strUserId = req.url.substring('/users/'.length)
+    const userId = parseInt(strUserId, 10)
+    if (userId) {
+        const user = removeUser(userId)
+        if (user) {
+            httpOk(res, user)
+        } else {
+            httpBadRequest(res, { message: 'user not found', userId: userId })
+        }
+    } else {
+        httpBadRequest(res, { message: 'bad user id', userId: userId })
+    }
+}
+
+export { getUsers, getUser, postUsers, putUsers, deleteUser, postLogin }

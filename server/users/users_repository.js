@@ -1,45 +1,48 @@
 import fs from 'fs'
 
-const FILE = './users/data/users.json'
+const FILE_NAME = './users/data/users.json'
 
-function findUsers() {
+function selectAllUsers() {
     return users
+
 }
 
-function findUserById(id) {
-    return users.find(u => u.id === id)
+
+function selectUserById(userId) {
+    return users.find(user => user.id === userId)
 }
 
-function deleteUserById(id) {
-    const userIndex = users.findIndex(u => u.id === id)
-    if (userIndex === -1) {
-        return false
-    }
-    users.splice(userIndex, 1)
-    fs.writeFileSync(FILE, JSON.stringify(users))
-    return true
-}
 
 function insertUser(user) {
-    if (users.find(u => u.id === user.id)) {
-        return false
-    }
-    user.id = Math.max(...users.map(u => u.id)) + 1
+    user.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1
+    //auto inc
+    console.log(user.id)
     users.push(user)
-    fs.writeFileSync(FILE, JSON.stringify(users))
+    fs.writeFileSync(FILE_NAME, JSON.stringify(users))
     return true
 }
 
 function updateUser(user) {
-    const userIndex = users.findIndex(u => u.id === user.id)
+    const userIndex = users.findIndex(u => user.id === u.id)
     if (userIndex === -1) {
         return false
     }
     users[userIndex] = user
-    fs.writeFileSync(FILE, JSON.stringify(users))
+    fs.writeFileSync(FILE_NAME, JSON.stringify(users))
     return true
 }
 
-const users = JSON.parse(fs.readFileSync(FILE))
+function deleteUser(userId) {
+    const userIndex = users.findIndex(u => u.id === userId)
+    if (userIndex === -1) {
+        return undefined
+    }
+    const user = users[userIndex]
+    users.splice(userIndex, 1)
+    fs.writeFileSync(FILE_NAME, JSON.stringify(users))
+    return user
+}
 
-export { findUsers, insertUser, findUserById, updateUser, deleteUserById }
+const users = JSON.parse(fs.readFileSync(FILE_NAME))
+
+export { selectAllUsers, selectUserById, insertUser, updateUser, deleteUser }

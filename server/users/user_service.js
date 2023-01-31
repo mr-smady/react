@@ -1,4 +1,4 @@
-import { deleteUserById, findUserById, findUsers, insertUser, updateUser } from "./users_repository.js";
+import { insertUser, selectAllUsers, selectUserById, updateUser, deleteUser } from "./users_repository.js"
 
 const UserInterface = {
     id: "number",
@@ -21,34 +21,34 @@ const validateUser = (user) => {
     return true
 }
 
-function listUsers() {
-    return findUsers()
+function getAllUsers() {
+    return selectAllUsers()
 }
 
-function getUserById(id) {
-    return findUserById(id)
+
+function getUserById(userId) {
+    return selectUserById(userId)
 }
 
 function createUser(user) {
     user.id = 0
-    if (!validateUser(user)) {
+    if (validateUser(user)) {
+        return insertUser(user)
+    } else {
         return false
     }
-    return insertUser(user)
 }
 
 function editUser(user) {
-    if (!validateUser(user)) {
+    if (validateUser(user)) {
+        return updateUser(user)
+    } else {
         return false
     }
-    return updateUser(user)
 }
 
-
-function deleteUser(id) {
-    return deleteUserById(id)
+function removeUser(userId) {
+    return deleteUser(userId)
 }
 
-
-
-export { listUsers, createUser, getUserById, editUser, deleteUser }
+export { getAllUsers, getUserById, createUser, editUser, removeUser }
