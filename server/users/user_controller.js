@@ -25,6 +25,7 @@ function postLogin(req, res) {
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + (60 * 60),//1H
         }, jwtKey)
+        httpOk(res, { jwt: token })
     } else {
         httpUnauthorized(res)
     }
