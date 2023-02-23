@@ -11,10 +11,20 @@ function postLogin(req, res) {
         var token = jwt.sign({
             user: 'user',
             sub: 1234,
+            roles: ['user'],
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + (60 * 60),//1H
         }, jwtKey)
         httpOk(res, { jwt: token })
+    } else if (credentials && credentials.username === 'admin'
+        && credentials.password === 'P@ssw0rd') {
+        var token = jwt.sign({
+            user: 'admin',
+            sub: 1234,
+            roles: ['admin'],
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + (60 * 60),//1H
+        }, jwtKey)
     } else {
         httpUnauthorized(res)
     }
